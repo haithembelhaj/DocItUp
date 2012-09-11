@@ -15,7 +15,7 @@ settings = ""
 
 
 def getCSS():
-    css_filename = 'markdown.css'
+    css_filename = 'styles.css'
     return open(css_filename, 'r').read().decode('utf-8')
 
 
@@ -56,6 +56,12 @@ def generateHtml(html):
     html_contents += '<html><head><meta charset="utf-8">'
     styles = getCSS()
     html_contents += '<style>%s</style>' % styles
+    html_contents += '<link rel="stylesheet" href="http://yandex.st/highlightjs/7.2/styles/solarized_light.min.css">'
+    html_contents += '<script src="http://yandex.st/highlightjs/7.2/highlight.min.js"></script>'
+    html_contents += '<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>'
+    html_contents += '<script>'
+    html_contents += '$(document).ready(function(){$("pre code").each(function(i, e) {hljs.highlightBlock(e)});});'
+    html_contents += '</script>'
     html_contents += u'</head><body><div id="jump_to">         Jump To …         <div id="jump_wrapper"><div id="jump_page">'
     html_contents += linksHtml
     html_contents += '</div></div></div>'
