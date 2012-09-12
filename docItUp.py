@@ -3,6 +3,7 @@ import markdown2
 import re
 import os
 import json
+import subprocess
 
 # the Files to build
 files = []
@@ -12,6 +13,7 @@ linksHtml = ""
 build_path = ""
 #settings
 settings = ""
+#files to ignore
 
 
 def getCSS():
@@ -71,7 +73,7 @@ def buildIndex(dirname, links):
     index = open(dirname + "/index.html", "w")
     linksHtml = markdown2.markdown(links, extras=['footnotes', 'toc'])
     if dirname == build_path:
-        title = settings['project_name']
+        title = settings['project_name'] + " Documentation"
     else:
         title = os.path.basename(dirname)
     index.write(generateHtml('<h1>' + title + '</h1>' + linksHtml))
@@ -83,7 +85,8 @@ def convertFiles():
     for dirname, dirnames, filenames in os.walk(build_path):
         links = ""
         for d in dirnames:
-            links += '+ [%s](%s)\n' % (d, d + "/index.html")
+            if d[0] != ".":
+                links += '+ [%s](%s)\n' % (d, d + "/index.html")
         for filename in filenames:
             if filename[-3:] == ".md":
                 links += '+ [%s](%s)\n' % (filename, filename[:-3] + ".html")
@@ -100,3 +103,6 @@ if __name__ == "__main__":
     settingFile.close()
     build_path = settings['build_path']
     convertFiles()
+    if 'hooks' in settings:
+        for hook in settings['hooks']:
+            subprocess.Popen(hook, cwd=os.path.abspath(build_path))
