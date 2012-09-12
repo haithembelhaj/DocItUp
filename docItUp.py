@@ -105,4 +105,5 @@ if __name__ == "__main__":
     convertFiles()
     if 'hooks' in settings:
         for hook in settings['hooks']:
-            subprocess.Popen(hook, cwd=os.path.abspath(build_path))
+            p = subprocess.Popen(hook, shell=True, cwd=os.path.abspath(build_path))
+            p.wait()

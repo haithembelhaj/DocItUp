@@ -1,5 +1,5 @@
 {
 "build_path":"/Users/benhaj/dev/docu",
 "project_name" : "Lifebutler",
-"hooks" : [["git", "add", "."],["git", "commit", "-am", "$date"],["git", "push"]]
+"hooks" : [["git", "add", "."],["git", "commit", "-am", "DocItUp"],["git", "push"]]
 }
