@@ -1,8 +1,6 @@
 # DocItUp (Documentation made easy)
 
-## Description
-
-A simple Dokumentation Generator based on Markdown. It's a python script so you have to have python 2.6 or greater installed. a simple style.css is included feel free to restyle it. DocItUp relies on highlight.js for syntax highlighting.
+A simple Dokumentation Generator based on Markdown. It's a python script so you have to have python 2.6 or greater installed. A sample `style.css` is included but feel free to restyle it. DocItUp relies on highlight.js for syntax highlighting.
 
 ## usage
 
