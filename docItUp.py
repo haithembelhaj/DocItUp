@@ -4,6 +4,7 @@ import re
 import os
 import json
 import subprocess
+import time
 
 # the Files to build
 files = []
@@ -11,6 +12,8 @@ files = []
 linksHtml = ""
 # build path
 build_path = ""
+# src path
+src_path = "src"
 #settings
 settings = ""
 #files to ignore
@@ -37,7 +40,7 @@ def postprocessor(html, filename):
 def convertmd(f):
     md = f.read()
     # convert the markdown
-    markdown_html = markdown2.markdown(md, extras=['footnotes', 'toc'])
+    markdown_html = markdown2.markdown(md, extras=['footnotes', 'toc','wiki-tables'])    
     # postprocess the html
     return postprocessor(markdown_html, os.path.basename(f.name))
 
@@ -53,17 +56,20 @@ def generateHtml(html, links=""):
     html_contents += '<script>'
     html_contents += '$(document).ready(function(){$("pre code").each(function(i, e) {hljs.highlightBlock(e)});});'
     html_contents += '</script>'
-    html_contents += u'</head><body><div id="jump_to">         Jump To …         <div id="jump_wrapper"><div id="jump_page">'
+    html_contents += u'</head><body><div id="container" class="clearfix"><div id="navigation"><h1>Navigation</h1>'
     html_contents += markdown2.markdown(links, extras=['footnotes', 'toc'])
-    html_contents += '</div></div></div>'
+    html_contents += '</div><div id="content">'
     html_contents += html
+    html_contents += '</div></div>'
+    html_contents += '<div id="footer"><p class="build"> Erstellt am: '+ time.strftime("%d %b %y %H:%M", time.gmtime()) + ' mit <a href="https://github.com/haithembelhaj/DocItUp"> DocItup</a></p></div>' 
     html_contents += '</body>'
     return html_contents.encode('utf-8')
 
 
 def convertFile(f, links):
     html = generateHtml(convertmd(f), links)
-    htmlFile = open(f.name[:-2] + 'html', 'w')
+    # print(f.path)
+    htmlFile = open(build_path + "/" + os.path.basename(f.name)[:-2] + 'html', 'w')
     htmlFile.write(html)
     htmlFile.close()
     f.close()
@@ -71,30 +77,47 @@ def convertFile(f, links):
 
 def buildIndex(dirname, links):
     index = open(dirname + "/index.html", "w")
-    linksHtml = markdown2.markdown(links, extras=['footnotes', 'toc'])
+    index_src = open(src_path + "/index.md", "r")
+    index_html = generateHtml(convertmd(index_src), markdown2.markdown(links, extras=['footnotes', 'toc']))    
     if dirname == build_path:
         title = settings['project_name'] + " Documentation"
     else:
         title = os.path.basename(dirname)
-    index.write(generateHtml('<h1>' + title + '</h1>' + linksHtml))
+    print links
+    index.write(index_html)
     index.close()
 
 
 def convertFiles():
     global linksHtml
-    for dirname, dirnames, filenames in os.walk(build_path):
-        links = ""
-        for d in dirnames:
-            if d[0] != ".":
-                links += '+ [%s](%s)\n' % (d, d + "/index.html")
+    links = ""
+    links += '+ [%s](%s)\n' % ("Startseite", "index.html")
+    for dirname, dirnames, filenames in os.walk(src_path):
+        basenameDir = os.path.basename(dirname)
+        
+        if basenameDir != "src":
+            print dirname
+            links += "+ **" + os.path.basename(dirname).title() + '** \n'
+
         for filename in filenames:
-            if filename[-3:] == ".md":
-                links += '+ [%s](%s)\n' % (filename, filename[:-3] + ".html")
+            print filename
+
+            if os.path.basename(filename)[:-3] != "index":
+
+                srcFile = open(dirname+'/'+filename, 'r')
+                headline = srcFile.readline().replace('#', '')
+                srcFile.close()
+                # filename[:-3].title()
+                if filename[-3:] == ".md":
+                    links += '+ [%s](%s)\n' % (headline, os.path.basename(filename)[:-3] + ".html")
+
+    for dirname, dirnames, filenames in os.walk(src_path):
         for filename in filenames:
-            if filename[-3:] == ".md":
+            if filename[-3:] == ".md" and os.path.basename(filename)[:-3] != "index":
+                print links
                 convertFile(open(os.path.join(dirname, filename), 'r'), links)
 
-        buildIndex(dirname, links)
+    buildIndex(build_path, links)
 
 
 if __name__ == "__main__":
